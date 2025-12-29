@@ -11,7 +11,7 @@ var height = 480
 size(width, height)
 resizable(true)
 
-title("User Management")
+title("Clinic Patient Condition input")
 var font_size = 14
 var header_font_size = 18
 var form_title_font_size = 21
@@ -135,7 +135,7 @@ var main_grid = component("grid", "main")
 var s_b_text = component("text", "")
 
 var n_u_btn = ui_c_btn_e("New", 1, 0)
-var m_c_btn = ui_c_btn_e("Input", 5, 0)
+var m_c_btn = ui_c_btn_e("Input Conditon", 5, 0)
 var d_u_btn = ui_c_btn_e("Delete", 5, 0)
 
 var r_u_btn = ui_c_btn_e("Refresh", 11, 0)
@@ -517,7 +517,7 @@ var popup_user_form = fn(data, mode){
     grid_add(main_grid, uug_grid,        0,1, 1,1, 1,1, 3,1, 30,30,0,30)
     grid_add(main_grid, button_grid,     0,2, 1,1, 1,0, 1,1, 20,30,30,30)
 
-    custom_dialog(main_grid, "Add/Edit User", 850, 500, true, r)
+    custom_dialog(main_grid, "Input data", 850, 500, true, r)
     return return_val[0]
 }
 
