@@ -1,0 +1,56 @@
+{
+  "respiratory_diseases": [
+    {
+      "code": "J01.0",
+      "short_description": "Acute Maxillary Sinusitis",
+      "detailed_description": "Acute maxillary sinusitis, unspecified",
+      "billable": true
+    },
+    {
+      "code": "J45.909",
+      "short_description": "Unspecified Asthma",
+      "detailed_description": "Unspecified asthma, uncomplicated",
+      "billable": true
+    },
+    {
+      "code": "J18.9",
+      "short_description": "Pneumonia",
+      "detailed_description": "Pneumonia, unspecified organism",
+      "billable": true
+    }
+  ],
+  "circulatory_diseases": [
+    {
+      "code": "I10",
+      "short_description": "Hypertension",
+      "detailed_description": "Essential (primary) hypertension",
+      "billable": true
+    },
+    {
+      "code": "I25.10",
+      "short_description": "CAD - Native Artery",
+      "detailed_description": "Atherosclerotic heart disease of native coronary artery without angina pectoris",
+      "billable": true
+    },
+    {
+      "code": "I63.9",
+      "short_description": "Stroke (Cerebral Infarction)",
+      "detailed_description": "Cerebral infarction, unspecified",
+      "billable": true
+    }
+  ],
+  "mental_health_disorders": [
+    {
+      "code": "F32.9",
+      "short_description": "Major Depressive Disorder",
+      "detailed_description": "Major depressive disorder, single episode, unspecified",
+      "billable": true
+    },
+    {
+      "code": "F41.1",
+      "short_description": "Generalized Anxiety Disorder",
+      "detailed_description": "Generalized anxiety disorder (GAD)",
+      "billable": true
+    }
+  ]
+}
