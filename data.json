@@ -1,24 +1,39 @@
 {
   "users": [
-    { "id": 1, "date": "2024-10-01", "name": "Alice Johnson", "condition": "I10" },
-    { "id": 2, "date": "2024-10-03", "name": "Bob Smith", "condition": null },
-    { "id": 3, "date": "2024-10-05", "name": "Charlie Davis", "condition": "J45.909" },
-    { "id": 4, "date": "2024-10-07", "name": "Diana Prince", "condition": "F41.1" },
-    { "id": 5, "date": "2024-10-08", "name": "Edward Norton", "condition": null },
-    { "id": 6, "date": "2024-10-10", "name": "Fiona Gallagher", "condition": "I63.9" },
-    { "id": 7, "date": "2024-10-12", "name": "George Miller", "condition": "J01.0" },
-    { "id": 8, "date": "2024-10-15", "name": "Hannah Abbott", "condition": null },
-    { "id": 9, "date": "2024-10-17", "name": "Ian Wright", "condition": "F32.9" },
-    { "id": 10, "date": "2024-10-20", "name": "Jenny Kim", "condition": "I25.10" },
-    { "id": 11, "date": "2024-10-22", "name": "Kevin Hart", "condition": "J18.9" },
-    { "id": 12, "date": "2024-10-25", "name": "Laura Palmer", "condition": null },
-    { "id": 13, "date": "2024-10-28", "name": "Mike Ross", "condition": "I10" },
-    { "id": 14, "date": "2024-11-01", "name": "Nina Simone", "condition": "F41.1" },
-    { "id": 15, "date": "2024-11-03", "name": "Oscar Isaac", "condition": "J45.909" },
-    { "id": 16, "date": "2024-11-05", "name": "Peter Parker", "condition": null },
-    { "id": 17, "date": "2024-11-08", "name": "Quinn Fabray", "condition": "I63.9" },
-    { "id": 18, "date": "2024-11-10", "name": "Riley Reid", "condition": "J01.0" },
-    { "id": 19, "date": "2024-11-12", "name": "Steven Strange", "condition": "F32.9" },
-    { "id": 20, "date": "2024-11-15", "name": "Tina Fey", "condition": null }
+    {
+      "id": "3f8e12d4-7b6a-4c91-8d25-99a0b1c2d3e4",
+      "date": "2025-05-12",
+      "name": "Patient 1",
+      "condition": "",
+      "group": "Cardiology"
+    },
+    {
+      "id": "e22c5b11-9d44-4a18-bc77-334455667788",
+      "date": "2025-06-01",
+      "name": "Patient 2",
+      "condition": "",
+      "group": "Endocrinology"
+    },
+    {
+      "id": "f55d66a7-e88b-499c-ad00-112233445566",
+      "date": "2025-06-15",
+      "name": "Patient 3",
+      "condition": null,
+      "group": "General Practice"
+    },
+    {
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "date": "2025-07-20",
+      "name": "Patient 4",
+      "condition": "",
+      "group": "Mental Health"
+    },
+    {
+      "id": "d9b2d63d-a23b-432d-8b2c-6a7f8e9d0c1b",
+      "date": "2025-08-05",
+      "name": "Patient 5",
+      "condition": "",
+      "group": "Unassigned"
+    }
   ]
 }
