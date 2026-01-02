@@ -1,0 +1,56 @@
+{
+  "respiratory_diseases": [
+    {
+      "code": "J01.0",
+      "short_description": "Acute Maxillary Sinusitis",
+      "detailed_description": "Acute inflammation and infection of the maxillary sinuses characterized by facial pain, pressure, and nasal congestion lasting less than 4 weeks.",
+      "billable": true
+    },
+    {
+      "code": "J45.909",
+      "short_description": "Unspecified Asthma",
+      "detailed_description": "Unspecified asthma, uncomplicated; a chronic inflammatory airway disease causing reversible airflow obstruction, wheezing, and shortness of breath without acute exacerbation.",
+      "billable": true
+    },
+    {
+      "code": "J18.9",
+      "short_description": "Pneumonia",
+      "detailed_description": "Pneumonia, unspecified organism; acute infection of the lung parenchyma causing inflammation of the alveoli and fluid accumulation, leading to cough and fever.",
+      "billable": true
+    }
+  ],
+  "circulatory_diseases": [
+    {
+      "code": "I10",
+      "short_description": "Hypertension",
+      "detailed_description": "Essential (primary) hypertension; chronic high blood pressure without a secondary identifiable cause, increasing the risk of cardiovascular events.",
+      "billable": true
+    },
+    {
+      "code": "I25.10",
+      "short_description": "CAD - Native Artery",
+      "detailed_description": "Atherosclerotic heart disease of native coronary artery without angina pectoris; narrowing of the heart's natural arteries due to plaque buildup in patients with no chest pain.",
+      "billable": true
+    },
+    {
+      "code": "I63.9",
+      "short_description": "Stroke (Cerebral Infarction)",
+      "detailed_description": "Cerebral infarction, unspecified; an ischemic stroke caused by the blockage of blood flow to the brain, resulting in localized tissue death (infarction).",
+      "billable": true
+    }
+  ],
+  "mental_health_disorders": [
+    {
+      "code": "F32.9",
+      "short_description": "Major Depressive Disorder",
+      "detailed_description": "Major depressive disorder, single episode, unspecified; a clinical mood disorder characterized by persistent low mood, loss of interest, and functional impairment.",
+      "billable": true
+    },
+    {
+      "code": "F41.1",
+      "short_description": "Generalized Anxiety Disorder",
+      "detailed_description": "Generalized anxiety disorder (GAD); excessive, uncontrollable worry and apprehension about various activities or events, occurring more days than not for at least 6 months.",
+      "billable": true
+    }
+  ]
+}
