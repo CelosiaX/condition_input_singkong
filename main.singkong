@@ -660,8 +660,8 @@ var c_data = json_parse(r[2])
 var test_user = web_to_arr(c_data)
 
 var r_c = http_get("https://dtbox.ddns.net/klinik/condition.web")
-var r_c = read("test_2.json")
-var r_c_data = json_parse(r_c)
+
+var r_c_data = json_parse(r_c[2])
 var condition_data = r_c_data
 
 var main_data = test_user
