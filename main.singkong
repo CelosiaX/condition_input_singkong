@@ -1,0 +1,759 @@
+load_module("ui_calendar")
+load_module("ui_util")
+load_module("db_util")
+load_module("util")
+load_module("web")
+load_module("json")
+
+reset()
+
+var width = 720
+var height = 480
+size(width, height)
+resizable(true)
+
+title("Clinic Patient Condition input")
+var font_size = 14
+var header_font_size = 18
+var form_title_font_size = 21
+
+var current_date = part(@)
+var return_date_comp = fn(){
+    return create_date_picker(current_date[0], current_date[1])
+}
+var return_date_comp_e = fn(y, m){
+    return create_date_picker(y, m)
+}
+
+var bg_white = fn(c){
+    config(c, "background", "white")
+}
+
+var border_on = fn(c){
+    config(c, "border", "")
+}
+
+var wb_switch = fn(c){
+    config(c, "background", "white")
+    config(c, "border", "")
+}
+
+var c_h_label = fn(c){
+    config_font_size(c, header_font_size)
+    config(c, "align", 1)
+}
+
+var ui_button_opt = {
+    0: [-16750849, -1],
+    1: [-16724992, -1],
+    2: [-52429, -1],
+    3: [-26368, -16777216],
+    4: [-16777216, -1],
+    5: [-1, -16777216],
+    6: [-14714228, -1],
+    7: [-7950195, -1], 
+    8: [-9593418, -1], 
+    9: [-5718073, -1], 
+    10: [-3092018, -1],
+    11: [-14714700, -1],
+    12: [-13393876, -1],
+    13: [-5845277, -1],
+    14: [-5054582, -1],
+    16: [-2039584, -1],
+    17: [-10263709, -1],
+    18: [-18611, -1],
+    19: [-10929, -1],
+    20: [-526345, -1]
+};
+
+
+var ui_c_btn_ = fn(a, t, m) {
+    var b = component("button", a)
+    var c = ui_button_opt[t]
+    if (c != null) {
+        config(b, "background", c[0])
+        config(b, "foreground", c[1])
+    }
+    config(b, "active", m)
+    return b
+}
+
+var ui_c_btn_e = fn(a, t, m) {
+    var b = component("button", a)
+    #
+    config(b, "border_painted", false)
+    ;
+    var c = ui_button_opt[t]
+    if (c != null) {
+        config(b, "background", c[0])
+        config(b, "foreground", c[1])
+    }
+    config(b, "active", m)
+    return b
+}
+
+var ui_m_btn_e = fn(b, t, m) {
+    var c = ui_button_opt[t]
+    if (c != null) {
+        config(b, "background", c[0])
+        config(b, "foreground", c[1])
+    }
+    config(b, "active", m)
+    return b
+}
+
+# Function to create a box of text fields;
+var basic_data_box = fn(labels, text_group, border, y_dir){
+    var basic_return_grid = component("grid", "login_grid")
+    bg_white(basic_return_grid)
+    if(border){
+        config(basic_return_grid, "border", "")
+    }
+    each(labels, fn(e, i){
+        var content_label = component("label", e)
+        var mid_label = component("label", ":")
+        config_font_size(content_label, font_size)
+        config_font_size(mid_label, font_size)
+        config_font_size(text_group[i], font_size)
+        if(y_dir == true){
+            grid_add(basic_return_grid, content_label,    0,i, 1,1, 0,0, 1,0, 0,15,0,0)
+            grid_add(basic_return_grid, mid_label,        1,i, 1,1, 0,0, 1,1, 0,15,0,0)
+            grid_add(basic_return_grid, text_group[i],    2,i, 1,1, 1,0, 1,0, 0,15,0,0)
+        }else{
+            var x = i * 3
+            grid_add(basic_return_grid, content_label,    x,0, 1,1, 0,0, 1,0, 0,15,0,5)
+            grid_add(basic_return_grid, mid_label,        x+1,0, 1,1, 0,0, 1,1, 0,15,0,5)
+            grid_add(basic_return_grid, text_group[i],    x+2,0, 1,1, 1,0, 1,0, 0,15,0,5)
+
+        }
+    })
+    
+    return basic_return_grid
+}
+
+var main_grid = component("grid", "main")
+
+var s_b_text = component("text", "")
+
+var n_u_btn = ui_c_btn_e("New", 1, 0)
+var e_u_btn = ui_c_btn_e("Input Conditon", 5, 0)
+var d_u_btn = ui_c_btn_e("Delete", 5, 0)
+
+var r_u_btn = ui_c_btn_e("Refresh", 11, 0)
+
+var s_u_btn = ui_c_btn_e("Save Condition", 11, 0)
+var t_user = component("table", "ID, Date, Name, Conditon", true)
+
+var s_g = component("grid", "")
+var submit_g = component("grid", "")
+var temp_text = component("label", "Fitur Belum di implementasi")
+grid_add(submit_g, temp_text,   0,0, 1,1, 1,1, 3,0, 10,10,10,10)
+var temp_r = []
+event(s_u_btn, fn(){
+    custom_dialog(submit_g, "Notice", 200, 100, false, temp_r)
+})
+
+grid_add(s_g, s_b_text,         0,0, 1,1, 1,1, 3,0, 10,0,10,0)
+grid_add(s_g, r_u_btn,          1,0, 1,1, 0,1, 3,0, 10,0,10,0)
+
+grid_add(s_g, n_u_btn,          3,0, 1,1, 0,1, 3,0, 10,10,10,0)
+grid_add(s_g, e_u_btn,          4,0, 1,1, 0,1, 3,0, 10,0,10,0)
+grid_add(s_g, d_u_btn,          5,0, 1,1, 0,1, 3,0, 10,0,10,0)
+
+grid_add(main_grid, s_g,        0,0, 1,1, 1,0, 1,0, 10,20,0,20)
+grid_add(main_grid, t_user,     0,1, 1,1, 1,1, 3,0, 0,20,0,10)
+grid_add(main_grid, s_u_btn,     0,2, 1,1, 1,0, 3,0, 0,20,0,10)
+
+add(main_grid)
+show()
+
+
+var get_patient_data = fn(){
+    var x = _user_data_arr[0]
+    var data_str = [[]]
+    var data_arr = [[]]
+    var filled_arr = [[]]
+    each(x, fn(e, i){
+        var n = e[2] + "_" + e[1] 
+        var fill_c = ""
+        if(e[3] != null & !empty(ifnull(e[3], ""))){
+            var fill_c = e[3]
+        }
+        var temp_str = [e[0], n] 
+        var temp_n = [n + "_" + e[0], fill_c]
+
+        set(data_str, 0, data_str[0] + temp_str) 
+        set(data_arr, 0, data_arr[0] + temp_n) 
+        set(filled_arr, 0, filled_arr[0] + fill_c) 
+    })
+    return [data_str[0], data_arr[0], filled_arr[0]]
+}
+
+var get_cdt_data = fn(){
+    var patient_child = keys(condition_data)
+    var data_str = [[""]]
+    var data_arr = [[""]]
+    var desc_arr = [[""]]
+    each(patient_child, fn(e, i){
+        var x = condition_data[e]
+            each(x, fn(e, i){
+                var s_desc = e["code"] + " - " + e["short_description"]
+
+                var n = e["code"]
+
+                var temp_str = [n, s_desc]
+
+                var l_desc = e["detailed_description"]
+                set(data_str, 0, data_str[0] + temp_str) 
+                set(data_arr, 0, data_arr[0] + string(s_desc)) 
+                set(desc_arr, 0, desc_arr[0] + l_desc) 
+            })
+
+    })
+
+    return [data_str[0], data_arr[0], desc_arr[0]]
+}
+
+var user_m_req = fn(payload){
+    if(payload["task"] == "add"){
+        payload - "task"
+        var u_id = payload["id"]
+        payload - "id"
+        set(user_data, u_id, payload)
+    }
+    #
+    var u_payload = {
+        "key"           : main_key,
+        "account"       : main_acc,
+        "token"         : main_token,
+        "task"          : "add"/"map",
+        "user_name"     : id,
+        "user_password" : pw,
+        "admin"         : admin_info,
+        "unit"          : number(unit_info),
+        "upt"           : number(upt_info),
+        "gardu"         : number(grd_info), 
+    }
+    var x = query_string_hash(payload)
+    var r = http_post("https://trade.plne.co.id/users/users_dev.web", x)
+    return json_parse(r[2])
+    ;
+}
+
+var popup_user_form = fn(data, mode){
+    var return_val = [[]]
+    # Top part of form;
+
+    var uug_info = [
+        "Patient"
+    ]
+    var gct_info = [
+        "Condition"
+    ]
+
+    var patient_cmb = component("combobox", "")
+    var grp_c_cmb = component("combobox", "")
+    var cdt_cmb = component("combobox", "")
+
+    var basic_uug_data = [patient_cmb]
+    var basic_gct_data = [cdt_cmb]
+
+    var patient_t = component("table", "Patient, Condition?", true)
+    #table_column(patient_t, []);
+    var patient_s = component("text", "")
+    var cdt_t = component("table", "Nama", true)
+    var cdt_s = component("text", "")
+    
+
+    var view_comp = "<body style='font-size: 12px;align=justify'></body>"
+    var c_desc = component("view", view_comp)
+    config(c_desc, "border", "Description")
+
+    var submit_button = ui_c_btn_("OK", 6, 0)
+    var cancel_button = ui_c_btn_("Cancel", 6, 0)
+
+    config(patient_t, "contents", [])
+    config(cdt_t, "contents", [[]])
+
+    var patient_data = get_patient_data()
+    var fill_data = patient_data[2]
+    config(patient_cmb, "contents", patient_data[0])
+    each(patient_data[1], fn(e, i){
+        table_add(patient_t, [e])
+        if(e[1] == false | empty(e[1])){
+            table_set_color(patient_t, "black", "yellow", i, 0)
+            table_set_color(patient_t, "black", "yellow", i, 1)
+        }
+    })
+    
+    var cdt_data = get_cdt_data()
+    #
+    config(cdt_cmb, "contents", cdt_data[0])
+    config(cdt_t, "contents", cdt_data[1])
+    each(cdt_data[1], fn(e, i){
+        table_add(cdt_t, [[e]])
+    })
+    ;
+
+    var patient_idx = [-1]
+    var cdt_idx = [-1]
+
+    var config_desc = fn(label_content, desc_comp){
+        var temp_view_comp = "
+        <body style='font-size: 12px;align=justify'>
+        <p>" + label_content + "</p></body>"
+        config(desc_comp, "contents", temp_view_comp)
+    }
+
+    var refresh_user_table_default = fn(){
+        set(_user_data_arr, 0, arr_to_data(user_data))
+        var temp_arr = [[]]
+        each(_user_data_arr[0], fn(e, i){
+            if(e[3] != null & !empty(ifnull(e[3], ""))){
+                set(temp_arr, 0, temp_arr[0] + e)
+            }
+        })
+        config(t_user, "contents", temp_arr[0])
+        refresh_table_color()
+        search_func()
+    }
+
+    var patient_event = fn(){
+        
+        var patient_id = get(patient_cmb, "text")
+        if(patient_id != ""){ 
+            var s_r_text = patient_id
+            var t_c = patient_data[1]
+            var f_c = patient_data[2]
+            each(t_c, fn(e, i){
+                var e_id = trim(e)
+                each(range(0, 2), fn(p_e, p_i) {
+                    if(
+                        matches(upper(e_id), ".*" + upper(s_r_text) + ".*")
+                    ){
+                        table_set_color(patient_t, "white", "blue", i, p_i)
+                        set(patient_idx, 0, i)
+                    }else{
+                        if(e[1] == false | empty(e[1])){
+                            table_set_color(patient_t, "black", "yellow", i, p_i)
+                        }else{
+                            table_set_color(patient_t, "black", "white", i, p_i)
+                        }
+                    }
+                })
+
+            })
+            var cdt_data = get_cdt_data()
+            config(cdt_cmb, "contents", cdt_data[0])
+            config(cdt_t, "contents", cdt_data[1])
+            each(cdt_data[1], fn(e, i){
+                table_add(cdt_t, [[e]])
+            })
+            if(patient_idx[0] != -1){
+                config(cdt_cmb, "text", patient_data[1][patient_idx[0]][1])
+            }
+
+        }else{
+            config(cdt_cmb, "contents", [])
+            config(cdt_t, "contents", [])
+            table_set_color(patient_t, "black", "white", -1, 0)
+        }
+        config_desc("", c_desc)
+    }
+
+    var cdt_event = fn(){
+        var cdt_id = get(cdt_cmb, "text")
+        if(cdt_id != ""){
+            var s_r_text = cdt_id
+            var t_c = cdt_data[1]
+            each(t_c, fn(e, i){
+                var e_id = trim(e)
+                # TODO: Handle regex chars of ) and (;
+                if(
+                    matches(upper(e_id), ".*" + upper(s_r_text) + ".*") 
+                ){
+                    table_set_color(cdt_t, "white", "blue", i, 0)
+                    set(cdt_idx, 0, i)
+                }else{
+                    table_set_color(cdt_t, "black", "white", i, 0)
+                }
+            })
+
+        }else{
+            table_set_color(cdt_t, "black", "white", -1, 0)
+        }
+        var term_label = cdt_data[2][get(cdt_cmb, "active")]
+        config_desc(term_label, c_desc)
+    }
+    event(patient_t, fn(){
+        var curr_data = split(get(patient_t, "contents")[get(patient_t, "active")][0], "_")[2]
+        config(patient_cmb, "text", curr_data)
+        patient_event()
+    })
+    event(cdt_t, fn(){
+        var curr_data = trim(split(get(cdt_t, "contents")[get(cdt_t, "active")][0], "-")[0])
+        config(cdt_cmb, "text", curr_data)
+
+        cdt_event()
+    })
+    event(patient_cmb, patient_event)
+    event(cdt_cmb, cdt_event)
+    var r = []
+
+    event(submit_button, fn(){
+        var patient_info = null
+        var cdt_info = null
+
+        var patient_info = get(patient_cmb, "contents")[get(patient_cmb, "active")]
+        var g_id = patient_info[0]
+        var g_user = split(patient_info[1], "_")
+        var name_data = g_user[0]
+        var date_data = g_user[1]
+        var cdt_info = trim(split(get(cdt_cmb, "contents")[get(cdt_cmb, "active")][1], "-")[0])
+
+        var u_payload = {
+            "task"          : mode,
+            "id"            : g_id,
+            "date"          : date_data,
+            "name"          : name_data,
+            "condition"     : cdt_info,
+        }
+        if(mode == "map"){
+            var map_res = user_m_req(u_payload)
+            custom_dialog_close(last(r))
+            refresh_user_table_default()
+            #
+            if(map_res["error"] == ""){
+                message(map_res["data"] + " Has been succesfully mapped")
+            }else{
+                message(map_res["error"])
+            };
+        }
+        if(mode == "add"){
+            var add_res = user_m_req(u_payload)
+            custom_dialog_close(last(r))
+            refresh_user_table_default()
+            #
+            if(add_res["error"] == ""){
+                message(add_res["data"] + " Has been succesfully added")
+            }else{
+                message(add_res["error"])
+            };
+        }
+        ui_m_btn_e(e_u_btn, 5, 0)
+        ui_m_btn_e(d_u_btn, 5, 0)
+    })
+    #Auto next field function
+    var f = fn(x) {
+        if(x[0] == "PRESSED" & x[3] == "Enter"){
+            if(get(name_input, "focus")) {
+                config(date_input, "focus", true)
+            }
+        }
+    }
+    event_keyboard_frame(f)
+    ;
+    event(cancel_button, fn(){
+        custom_dialog_close(last(r))
+        set(return_val, 0, false)
+    })
+
+    var main_grid = component("grid", "User Management")
+    bg_white(main_grid)
+
+
+    var uug_grid = basic_data_box(uug_info, basic_uug_data, false, false)
+    var gct_grid = basic_data_box(gct_info, basic_gct_data, false, false)
+    grid_add(uug_grid, patient_s,   0,1, 3,1, 1,0, 3,1)
+    grid_add(uug_grid, patient_t,   0,2, 3,1, 1,1, 3,1)
+
+    var c_s_btn = ui_c_btn_e("Search", 11, 0)
+    
+    var temp_grid = component("grid", "")
+    bg_white(temp_grid)
+    grid_add(temp_grid, cdt_s,       0,1, 1,1, 9,0, 3,1)
+    grid_add(temp_grid, c_s_btn,     1,1, 1,1, 1,0, 3,1)
+    grid_add(gct_grid, temp_grid,     0,1, 3,1, 1,0, 3,1)
+
+    grid_add(gct_grid, cdt_t,       0,2, 3,1, 1,1, 3,1)
+    grid_add(gct_grid, c_desc,      0,3, 6,1, 1,1, 3,1)
+
+    var patient_d = []
+    var cdt_d = []
+
+
+    event(patient_s, fn(){
+        table_set_color(patient_t, "black", "white", -1, 0)
+        var n_c_o = [[]]
+        var s_r_text = ".*" + trim(get(patient_s, "contents")) +  ".*"
+        var t_c = patient_data[1]
+        var patient_id = get(patient_cmb, "text")
+        var h_selected = [-1]
+       
+        each(t_c, fn(e, i){
+            if(
+                matches(upper(string(e)), ".*" + upper(s_r_text) + ".*")
+            ){
+                set(n_c_o, 0, n_c_o[0] + e)
+                each(range(0, 2), fn(p_e, p_i) {
+                    if(patient_id != ""){
+                        var e_id = trim(split(e[0], "_")[2])
+                        if(matches(upper(e_id), ".*" + upper(patient_id) + ".*")){
+                            table_set_color(patient_t, "white", "blue", len(n_c_o[0])- 1, p_i)
+                        }else{
+                            if(e[1] == false | empty(e[1])){
+                                table_set_color(patient_t, "black", "yellow", len(n_c_o[0]) - 1, p_i)
+                            }else{
+                                table_set_color(patient_t, "black", "white", len(n_c_o[0]) - 1, p_i)
+                            }
+                        }
+                    }
+                })
+
+            }
+        })
+
+        var n_c_o = n_c_o[0]
+        config(patient_t, "contents", n_c_o)
+    
+    })
+    event(c_s_btn, fn(){
+        table_set_color(cdt_t, "black", "white", -1, 0)
+        var n_c_o = [[]]
+        var s_r_text = ".*" + trim(get(cdt_s, "contents")) +  ".*"
+        var t_c = cdt_data[1]
+        var d_c = cdt_data[2]
+        var cdt_id = get(cdt_cmb, "text")
+        var h_selected = [-1]
+        
+        each(t_c, fn(e, i){
+            if(
+                matches(upper(string(e)),  ".*" + upper(s_r_text) + ".*") |
+                matches(upper(string(d_c[i])),  ".*" + upper(s_r_text) + ".*")
+            ){
+                set(n_c_o, 0, n_c_o[0] + [e])
+                if(cdt_id != ""){
+                    var e_id = trim(split(e, "-")[0])
+                    if(
+                        matches(upper(e_id), ".*" + upper(cdt_id)  + ".*")
+                    ){
+                        set(h_selected, 0, len(n_c_o[0])-1)
+                    }
+                }
+            }
+        })
+
+        var n_c_o = n_c_o[0]
+        config(cdt_t, "contents", n_c_o)
+        if(h_selected[0] != -1){
+            table_set_color(cdt_t, "white", "blue", h_selected[0], 0)
+        }
+    })
+
+    
+    var form_title = component("label","Halaman user")
+
+    border_on(form_title)
+    config(form_title, "align", 1)
+    config(form_title, "font", ["Times New Roman", 1, header_font_size])
+
+    var header_label = component("label", "Konfirmasi Pengumpulan Form")
+    var body_label = component("label", "Apakah semua data sudah diisi dengan benar?")
+    config_font_size(header_label, header_font_size)
+    config_font_size(body_label, font_size)
+    config(header_label, "font", ["Times New Roman", 1, header_font_size])
+    config(body_label, "font", ["Times New Roman", 0, font_size])
+    config(header_label, "align", 1)
+    config(body_label, "align", 1)
+    var g = component("grid", "")
+    grid_add(g, header_label,  0,0, 1,1, 1,0, 3,0)
+    grid_add(g, body_label,    0,1, 1,1, 0,0, 3,0)
+    
+    var button_grid = component("grid", "")
+    bg_white(button_grid)
+    grid_add(button_grid, submit_button, 0,0, 1,1, 1,1, 1,1, 0,0,0,5)
+    grid_add(button_grid, cancel_button, 1,0, 1,1, 1,1, 1,1, 0,5,0,0)
+
+    grid_add(main_grid, uug_grid,        0,1, 1,1, 1,1, 3,1, 30,30,0,30)
+    grid_add(main_grid, gct_grid,        0,2, 1,1, 1,4, 3,1, 30,30,0,30)
+    grid_add(main_grid, button_grid,     0,3, 1,1, 1,0, 1,1, 20,30,30,30)
+
+    custom_dialog(main_grid, "Input data", 1000, 800, false, r)
+    return return_val[0]
+}
+
+var refresh_table_color = fn(){
+    var v = get(t_user, "contents")
+    each(v, fn(e, i) {
+        table_set_color(t_user, "black", "white", i, 0)
+        if (e[1] == "true") {
+            table_set_color(t_user, "-16724992", "", i, 1)
+        }else{
+            table_set_color(t_user, "black", "white", i, 1)
+        }
+
+        if(e[2] == "" | e[2] == "null" | e[2] == null){
+            table_set_value(t_user, "", i, 2)
+            table_set_color(t_user, "white", "black", i, 2)
+        }else{
+            table_set_color(t_user, "black", "white", i, 2)
+        }
+
+        if(e[3] == "" | e[3] == "null" | e[3] == null){
+            table_set_value(t_user, "", i, 3)
+            table_set_color(t_user, "white", "black", i, 3)
+        }else{
+            table_set_color(t_user, "black", "white", i, 3)
+        }
+
+        if(e[4] == "" | e[4] == "null" | e[4] == null){
+            table_set_value(t_user, "", i, 4)
+            table_set_color(t_user, "white", "black", i, 4)
+        }else{
+            table_set_color(t_user, "black", "white", i, 4)
+        }
+        if(e[5] == "" | e[5] == "null" | e[5] == null){
+            table_set_value(t_user, "", i, 5)
+            table_set_color(t_user, "white", "black", i, 5)
+        }else{
+            table_set_color(t_user, "black", "white", i, 5)
+        }
+    })
+}
+
+
+var web_to_arr = fn(data){
+    var return_arr = []
+    var data_arr = [{}]
+    each(data, fn(e, i){
+        var child_arr = []
+        var x = {
+            e[1]:{
+                "date": e[2],
+                "name": e[0],
+                "condition": ""
+            }
+        }
+        child_arr + e[1] + e[2] + e[0] + ""
+        return_arr + child_arr
+        data_arr[0] + x
+    })
+    return [return_arr, data_arr]
+}
+
+var arr_to_data = fn(data){
+    var d_keys = keys(data)
+    var return_arr = []
+    each(d_keys, fn(e, i){
+        var c_data = data[e]
+        var c_keys = keys(c_data)
+        var c_arr = [e]
+        each(c_keys, fn(s_e, s_i){
+            c_arr + c_data[s_e]
+        })
+        return_arr + c_arr
+    })
+    return return_arr
+}
+var r = http_get("https://dtbox.ddns.net/klinik/encounter.web")
+var c_data = json_parse(r[2])
+var test_user = web_to_arr(c_data)
+
+var r_c = http_get("https://dtbox.ddns.net/klinik/condition.web")
+var r_c = read("test_2.json")
+var r_c_data = json_parse(r_c)
+var condition_data = r_c_data
+
+var main_data = test_user
+
+var user_data = main_data[1][0]
+var _user_data_arr = [main_data[0]]
+#config(t_user, "contents", _user_data_arr[0]);
+refresh_table_color()
+
+var search_func = fn(){
+    var n_c_o = [[]]
+    var s_r_text = ".*" + trim(get(s_b_text, "contents")) +  ".*"
+    each(_user_data_arr[0], fn(e, i){
+        if((
+            matches(upper(string(e[0])),  ".*" + upper(s_r_text) + ".*") | 
+            matches(upper(string(e[1])),  ".*" + upper(s_r_text) + ".*") |
+            matches(upper(string(e[2])),  ".*" + upper(s_r_text) + ".*") |
+            matches(upper(string(e[3])),  ".*" + upper(s_r_text) + ".*") |
+            matches(upper(string(e[4])),  ".*" + upper(s_r_text) + ".*") ) & (e[3] != null & !empty(ifnull(e[3], "")))
+        ){
+            set(n_c_o, 0, n_c_o[0] + e)
+        }
+    })
+
+    var n_c_o = n_c_o[0]
+    config(t_user, "contents", n_c_o)
+    refresh_table_color()
+}
+
+event(s_b_text, search_func)
+event(n_u_btn, fn(){
+    popup_user_form([], "add")
+})
+
+event(e_u_btn, fn(){
+    var curr_data = get(t_user, "contents")[get(t, "active")]
+    if(t_f[0][0]){
+        popup_user_form(curr_data, "map")
+    }
+})
+
+var t_f = [[false]]
+var p_idx = [-1]
+
+event(t_user, fn(){
+    ui_m_btn_e(e_u_btn, 3, 0)
+    ui_m_btn_e(d_u_btn, 2, 0)
+    var curr_idx = get(t_user, "active")
+    var curr_data = get(t_user, "contents")
+    var cell_data = curr_data[p_idx[0]]
+    each(range(0, 4), fn(e, i) {
+        if(cell_data != null){
+            if (cell_data[i] == "true") {
+                table_set_color(t_user, "-16724992", "", p_idx[0], i)
+            } 
+            if (cell_data[i] == "null") {
+                table_set_color(t_user, "white", "black", p_idx[0], i)
+            } 
+            else{
+                table_set_color(t_user, "black", "white", p_idx[0], i)
+            }
+        }
+        if(curr_data[curr_idx][i] != "-"){
+            table_set_color(t_user, "white", "blue", curr_idx, i)
+        }
+    })
+    set(p_idx, 0, curr_idx)
+    set(t_f, 0, [true])
+})
+
+event_focus(s_b_text, fn(x) {
+    if(x[0] == "GAINED"){
+        var curr_data = get(t_user, "contents")
+        each(range(0, 4), fn(e, i) {
+            if(p_idx[0] != -1){
+                var cell_data = curr_data[p_idx[0]] 
+                if(cell_data != null){
+                    if (cell_data[i] == "true") {
+                        table_set_color(t_user, "-16724992", "", p_idx[0], i)
+                    } 
+                    if (cell_data[i] == "null") {
+                        table_set_color(t_user, "white", "black", p_idx[0], i)
+                    } 
+                    else{
+                        table_set_color(t_user, "black", "white", p_idx[0], i)
+                    }
+                }
+            }
+        })
+        set(p_idx, 0, -1)
+        ui_m_btn_e(e_u_btn, 5, 0)
+        ui_m_btn_e(d_u_btn, 5, 0)
+        set(t_f, 0, [false])
+    }
+})

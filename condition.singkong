@@ -1,0 +1,31 @@
+load_module("csv")
+
+var a = csv_from_string(";", read("condition.csv"))
+var res = [{}]
+
+each(a, fn(e, i){
+    if(i != 0){
+
+        var id = e[1] + "-" + e[6]
+        var member = {
+            "code": e[3],
+            "short_description": e[4],
+            "detailed_description": e[5],
+        }
+        #
+        "(" + e[3] + ")" + "-" + e[4] : e[5]
+        
+        println([id, member])
+        println("Dict Status: " +len(ifnull(res[0][id], {})))
+        println("Current dict: " + res[0])
+        ;
+        if(len(ifnull(res[0][id], {})) != 0){
+            res[0][id] + member
+        }else{
+            res[0] + {
+                id : [member]
+            }
+        }
+    }
+})
+write("test_2.json", res[0])
