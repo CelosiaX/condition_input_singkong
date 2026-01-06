@@ -130,7 +130,7 @@ var basic_data_box = fn(labels, text_group, border, y_dir){
     
     return basic_return_grid
 }
-
+var d_derby = db_connect_embed("Medical") 
 var main_grid = component("grid", "main")
 
 var s_b_text = component("text", "")
@@ -190,28 +190,22 @@ var get_patient_data = fn(){
 }
 
 var get_cdt_data = fn(){
-    var patient_child = keys(condition_data)
+    var patient_child = condition_data
     var data_str = [[""]]
-    var data_arr = [[""]]
-    var desc_arr = [[""]]
+    var data_arr = [[]]
     each(patient_child, fn(e, i){
-        var x = condition_data[e]
-            each(x, fn(e, i){
-                var s_desc = e["code"] + " - " + e["short_description"]
+        var s_desc = e[2] + " - " + e[3]
 
-                var n = e["code"]
+        var n = e[2]
 
-                var temp_str = [n, s_desc]
+        var temp_str = [n, s_desc]
 
-                var l_desc = e["detailed_description"]
-                set(data_str, 0, data_str[0] + temp_str) 
-                set(data_arr, 0, data_arr[0] + string(s_desc)) 
-                set(desc_arr, 0, desc_arr[0] + l_desc) 
-            })
-
+        var l_desc = e[4]
+        set(data_str, 0, data_str[0] + temp_str) 
+        set(data_arr, 0, data_arr[0] + [string(s_desc), l_desc]) 
     })
 
-    return [data_str[0], data_arr[0], desc_arr[0]]
+    return [data_str[0], data_arr[0]]
 }
 
 var user_m_req = fn(payload){
@@ -290,9 +284,6 @@ var popup_user_form = fn(data, mode){
     #
     config(cdt_cmb, "contents", cdt_data[0])
     config(cdt_t, "contents", cdt_data[1])
-    each(cdt_data[1], fn(e, i){
-        table_add(cdt_t, [[e]])
-    })
     ;
 
     var patient_idx = [-1]
@@ -346,9 +337,7 @@ var popup_user_form = fn(data, mode){
             var cdt_data = get_cdt_data()
             config(cdt_cmb, "contents", cdt_data[0])
             config(cdt_t, "contents", cdt_data[1])
-            each(cdt_data[1], fn(e, i){
-                table_add(cdt_t, [[e]])
-            })
+
             if(patient_idx[0] != -1){
                 config(cdt_cmb, "text", patient_data[1][patient_idx[0]][1])
             }
@@ -382,8 +371,10 @@ var popup_user_form = fn(data, mode){
         }else{
             table_set_color(cdt_t, "black", "white", -1, 0)
         }
-        var term_label = cdt_data[2][get(cdt_cmb, "active")]
-        config_desc(term_label, c_desc)
+        if(get(cdt_cmb, "active") != -1){
+            var term_label = cdt_data[1][get(cdt_cmb, "active")][1]
+            config_desc(term_label, c_desc)
+        }
     }
     event(patient_t, fn(){
         var curr_data = split(get(patient_t, "contents")[get(patient_t, "active")][0], "_")[2]
@@ -522,18 +513,18 @@ var popup_user_form = fn(data, mode){
         var n_c_o = [[]]
         var s_r_text = ".*" + trim(get(cdt_s, "contents")) +  ".*"
         var t_c = cdt_data[1]
-        var d_c = cdt_data[2]
+
         var cdt_id = get(cdt_cmb, "text")
         var h_selected = [-1]
         
         each(t_c, fn(e, i){
             if(
-                matches(upper(string(e)),  ".*" + upper(s_r_text) + ".*") |
-                matches(upper(string(d_c[i])),  ".*" + upper(s_r_text) + ".*")
+                matches(upper(string(e[0])),  ".*" + upper(s_r_text) + ".*") |
+                matches(upper(string(e[1])),  ".*" + upper(s_r_text) + ".*")
             ){
-                set(n_c_o, 0, n_c_o[0] + [e])
+                set(n_c_o, 0, n_c_o[0] + [e[0]])
                 if(cdt_id != ""){
-                    var e_id = trim(split(e, "-")[0])
+                    var e_id = trim(split(e[0], "-")[0])
                     if(
                         matches(upper(e_id), ".*" + upper(cdt_id)  + ".*")
                     ){
@@ -659,11 +650,69 @@ var r = http_get("https://dtbox.ddns.net/klinik/encounter.web")
 var c_data = json_parse(r[2])
 var test_user = web_to_arr(c_data)
 
+var p_bar = popup_show_progress_(50, 10, "Initializing Database, Please wait...")
+var c_q_sql = "
+    SELECT condition_id, group_code, condition_code, short_description, detailed_description FROM conditions ORDER BY condition_id asc
+"
+var z = db_query_single(d_derby, c_q_sql, [])
+
+if(z == null){
+    var snomed_t_d = [
+        ["condition_id", "id."],
+        ["group_code", "varchar"],
+        ["condition_code", "varchar"],
+        ["short_description", "varchar"],
+        ["detailed_description", "varchar"]
+    ]
+
+    var r = db_create_table_embed(d_derby, "conditions", snomed_t_d)    
+
+    #
+    var r_c = http_get("https://dtbox.ddns.net/klinik/condition.web")
+    var r_c_data = json_parse(r_c[2])
+    var r_c_file = read("test.json")
+    var r_c_file = read("conditions.json")
+    ;
+    var r_c_file = read("conditions.json", true)
+    var r_c_data = json_parse(r_c_file)
+    var condition_data = r_c_data
+    var patient_child = keys(condition_data)
+
+    each(patient_child, fn(e, i){
+        var x = condition_data[e]
+            each(x, fn(s_e, s_i){
+                var s_desc = s_e["code"] + " - " + s_e["short_description"]
+
+                var c_code = s_e["code"]
+                var s_desc = s_e["short_description"]
+                var l_desc = s_e["detailed_description"]
+
+                var data = {
+                        "group_code": e , 
+                        "condition_code": c_code, 
+                        "short_description": s_desc,
+                        "detailed_description": l_desc
+                    }
+                var x = db_insert(d_derby, "conditions", data)
+            })
+
+    })
+    var c_q_sql = "
+        SELECT condition_id, group_code, condition_code, short_description, detailed_description FROM conditions ORDER BY condition_id asc
+    "
+    var z = db_query_single(d_derby, c_q_sql, [])[0]
+}else{
+    var z = z[0]
+}
+
+var condition_data = z
+popup_hide(p_bar)
+#
 var r_c = http_get("https://dtbox.ddns.net/klinik/condition.web")
 
 var r_c_data = json_parse(r_c[2])
 var condition_data = r_c_data
-
+;
 var main_data = test_user
 
 var user_data = main_data[1][0]

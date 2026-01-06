@@ -1,4 +1,0 @@
-Daftar encounter: curl https://dtbox.ddns.net/klinik/encounter.web
-
-ICD-10 Dummy: curl https://dtbox.ddns.net/klinik/condition.web
-
