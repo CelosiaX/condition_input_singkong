@@ -1,0 +1,14 @@
+Wed Jan 07 03:41:41 WIB 2026 Thread[#3,main,5,main] Class org.apache.derby.jdbc.Driver42 java.lang.ClassNotFoundException: org.apache.derby.jdbc.Driver42, module ignored.
+----------------------------------------------------------------
+Wed Jan 07 03:41:41 WIB 2026:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (???): instance a816c00e-019b-950b-3f64-00001e1ec580 
+on database directory D:\PT. Stabil Standar Sinergi\Work_30-9\Kasir_prototype\Singkong_ver\Medical with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@11a4022a 
+Loaded from file:/D:/PT.%20Stabil%20Standar%20Sinergi/Work_30-9/Kasir_prototype/Singkong_ver/Singkong.jar
+java.vendor=Oracle Corporation
+java.runtime.version=24.0.2+12-54
+user.dir=D:\PT. Stabil Standar Sinergi\Work_30-9\Kasir_prototype\Singkong_ver
+os.name=Windows 11
+os.arch=amd64
+os.version=10.0
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''

@@ -189,9 +189,111 @@ var get_patient_data = fn(){
     return [data_str[0], data_arr[0], filled_arr[0]]
 }
 
+var get_grp_data = fn(){
+    var g_q_sql = "
+        SELECT group_code 
+        FROM conditions 
+        GROUP BY group_code 
+        ORDER BY group_code ASC
+    "
+    var g_res = db_query_single(d_derby, g_q_sql, [])[0]
+    var group_child = g_res
+    var data_str = [[]]
+    var data_arr = [[]]
+    each(group_child, fn(e, i){
+        var group_n = split(e[0], "-")
+
+        var n = group_n[0]
+
+        var temp_str = [n, e[0]]
+
+        set(data_str, 0, data_str[0] + temp_str) 
+        set(data_arr, 0, data_arr[0] + [e[0]]) 
+    })
+
+    return [data_str[0], data_arr[0]]
+}
+
+var get_cdt_data_query_group = fn(search){
+    var g_q_sql = "
+        SELECT 
+        condition_id, 
+        group_code, 
+        condition_code, 
+        short_description, 
+        detailed_description 
+        FROM conditions 
+        WHERE group_code = ?
+        ORDER BY condition_id asc
+    "
+    var g_res = db_query_single(d_derby, g_q_sql, [search])[0]
+    var patient_child = g_res
+    var data_str = [[]]
+    var data_arr = [[]]
+    each(patient_child, fn(e, i){
+        var s_desc = e[2] + " - " + e[3]
+
+        var n = e[2]
+
+        var temp_str = [n, s_desc]
+
+        var l_desc = e[4]
+        set(data_str, 0, data_str[0] + temp_str) 
+        set(data_arr, 0, data_arr[0] + [string(s_desc), l_desc]) 
+    })
+
+    return [data_str[0], data_arr[0]]
+}
+var get_cdt_data_query_search = fn(search){
+    var search = lower(search)
+    var g_q_sql = "
+        SELECT 
+        condition_id, 
+        group_code, 
+        condition_code, 
+        short_description, 
+        detailed_description 
+        FROM conditions 
+        WHERE 
+            group_code like ''
+        ORDER BY condition_id asc
+    "
+    #TODO: Fix, group_code and condition_code not finding exact search;
+    var g_res = db_select(d_derby, "conditions", 
+    [   "condition_id", 
+        "group_code", 
+        "condition_code", 
+        "short_description", 
+        "detailed_description" 
+    ], 
+    [ ["lower(group_code) like ", ""+search+"%", "OR"],
+    ["lower(condition_code) like ", ""+search+"%", "OR"],
+    ["lower(short_description) like ", "%"+search+"%", "OR"],
+    ["lower(detailed_description) like ", "%"+search+"%", ""]], "ORDER BY condition_id asc")[0]
+
+    var patient_child = g_res
+    var data_str = [[]]
+    var data_arr = [[]]
+    var s_g_code = [-1]
+    each(patient_child, fn(e, i){
+        var s_desc = e[2] + " - " + e[3]
+
+        var n = e[2]
+
+        var temp_str = [n, s_desc]
+
+        var l_desc = e[4]
+        set(s_g_code, 0, e[1]) 
+        set(data_str, 0, data_str[0] + temp_str) 
+        set(data_arr, 0, data_arr[0] + [string(s_desc), l_desc]) 
+    })
+
+    return [data_str[0], data_arr[0], s_g_code[0]]
+}
+
 var get_cdt_data = fn(){
     var patient_child = condition_data
-    var data_str = [[""]]
+    var data_str = [[]]
     var data_arr = [[]]
     each(patient_child, fn(e, i){
         var s_desc = e[2] + " - " + e[3]
@@ -241,15 +343,19 @@ var popup_user_form = fn(data, mode){
     var uug_info = [
         "Patient"
     ]
+    var grp_info = [
+        "Group"
+    ]
     var gct_info = [
         "Condition"
     ]
 
     var patient_cmb = component("combobox", "")
-    var grp_c_cmb = component("combobox", "")
+    var grp_cmb = component("combobox", "")
     var cdt_cmb = component("combobox", "")
 
     var basic_uug_data = [patient_cmb]
+    var basic_grp_data = [grp_cmb]
     var basic_gct_data = [cdt_cmb]
 
     var patient_t = component("table", "Patient, Condition?", true)
@@ -257,6 +363,8 @@ var popup_user_form = fn(data, mode){
     var patient_s = component("text", "")
     var cdt_t = component("table", "Nama", true)
     var cdt_s = component("text", "")
+    var grp_t = component("table", "Nama", true)
+    var grp_s = component("text", "")
     
 
     var view_comp = "<body style='font-size: 12px;align=justify'></body>"
@@ -267,6 +375,7 @@ var popup_user_form = fn(data, mode){
     var cancel_button = ui_c_btn_("Cancel", 6, 0)
 
     config(patient_t, "contents", [])
+    config(grp_t, "contents", [[]])
     config(cdt_t, "contents", [[]])
 
     var patient_data = get_patient_data()
@@ -280,6 +389,10 @@ var popup_user_form = fn(data, mode){
         }
     })
     
+    var grp_data = get_grp_data()
+    config(grp_cmb, "contents", grp_data[0])
+    config(grp_t, "contents", grp_data[1])
+
     var cdt_data = get_cdt_data()
     #
     config(cdt_cmb, "contents", cdt_data[0])
@@ -287,8 +400,9 @@ var popup_user_form = fn(data, mode){
     ;
 
     var patient_idx = [-1]
+    var grp_idx = [-1]
     var cdt_idx = [-1]
-
+    var cdt_s_data = [[]]
     var config_desc = fn(label_content, desc_comp){
         var temp_view_comp = "
         <body style='font-size: 12px;align=justify'>
@@ -334,30 +448,68 @@ var popup_user_form = fn(data, mode){
                 })
 
             })
-            var cdt_data = get_cdt_data()
-            config(cdt_cmb, "contents", cdt_data[0])
-            config(cdt_t, "contents", cdt_data[1])
 
-            if(patient_idx[0] != -1){
+            if(patient_idx[0] != -1 & patient_data[1][patient_idx[0]][1] != ""){
+                set(cdt_s_data, 0, get_cdt_data_query_search(patient_data[1][patient_idx[0]][1]))
+                var temp_cdt_data = cdt_s_data[0]
+
+                config(grp_cmb, "text", split(temp_cdt_data[2], "-")[0])
                 config(cdt_cmb, "text", patient_data[1][patient_idx[0]][1])
+
+            }else{
+                config(cdt_cmb, "contents", [[]])
+                config(cdt_t, "contents", [[]])
             }
 
         }else{
-            config(cdt_cmb, "contents", [])
-            config(cdt_t, "contents", [])
+            config(cdt_cmb, "contents", [[]])
+            config(cdt_t, "contents", [[]])
             table_set_color(patient_t, "black", "white", -1, 0)
         }
         config_desc("", c_desc)
     }
+    
+    var grp_event = fn(){
+        var grp_id = get(grp_cmb, "text")
+        if(grp_id != ""){
+            var s_r_text = grp_id
+            var t_c = grp_data[1]
+            each(t_c, fn(e, i){
+                var e_id = trim(e[0])
+                if(
+                    matches(upper(e_id), ".*" + upper(s_r_text) + ".*") 
+                ){
+                    table_set_color(grp_t, "white", "blue", i, 0)
+                    set(grp_idx, 0, i)
+                }else{
+                    table_set_color(grp_t, "black", "white", i, 0)
+                }
+            })
+
+        }else{
+            table_set_color(grp_t, "black", "white", -1, 0)
+        }
+
+        if(get(grp_cmb, "active") != -1){
+            set(cdt_s_data, 0, get_cdt_data_query_group(get(grp_t, "contents")[get(grp_cmb, "active")][0]))
+            var temp_cdt_data = cdt_s_data[0]
+            config(cdt_cmb, "contents", temp_cdt_data[0])
+            config(cdt_t, "contents", temp_cdt_data[1])
+            table_set_color(cdt_t, "black", "white", -1, 0)
+        }
+        config_desc("", c_desc)
+        config(grp_s, "contents", "")
+    }
 
     var cdt_event = fn(){
         var cdt_id = get(cdt_cmb, "text")
+        var temp_cdt_data = cdt_s_data[0]
         if(cdt_id != ""){
             var s_r_text = cdt_id
-            var t_c = cdt_data[1]
+            var t_c = temp_cdt_data[1]
             each(t_c, fn(e, i){
-                var e_id = trim(e)
-                # TODO: Handle regex chars of ) and (;
+                var e_id = trim(e[0])
+                # TODO: Handle regex chars of curved_brackets = ();
                 if(
                     matches(upper(e_id), ".*" + upper(s_r_text) + ".*") 
                 ){
@@ -371,8 +523,10 @@ var popup_user_form = fn(data, mode){
         }else{
             table_set_color(cdt_t, "black", "white", -1, 0)
         }
-        if(get(cdt_cmb, "active") != -1){
-            var term_label = cdt_data[1][get(cdt_cmb, "active")][1]
+        #TODO: CHECK THIS condition, kinda weird;
+        if(get(cdt_cmb, "active") != -1 & cdt_s_data[0] != []){
+            var temp_cdt_data = cdt_s_data[0]
+            var term_label = temp_cdt_data[1][get(cdt_cmb, "active")][1]
             config_desc(term_label, c_desc)
         }
     }
@@ -381,6 +535,11 @@ var popup_user_form = fn(data, mode){
         config(patient_cmb, "text", curr_data)
         patient_event()
     })
+    event(grp_t, fn(){
+        var curr_data = split(get(grp_t, "contents")[get(grp_t, "active")][0], "-")[0]
+        config(grp_cmb, "text", curr_data)
+        grp_event()
+    })
     event(cdt_t, fn(){
         var curr_data = trim(split(get(cdt_t, "contents")[get(cdt_t, "active")][0], "-")[0])
         config(cdt_cmb, "text", curr_data)
@@ -388,6 +547,7 @@ var popup_user_form = fn(data, mode){
         cdt_event()
     })
     event(patient_cmb, patient_event)
+    event(grp_cmb, grp_event)
     event(cdt_cmb, cdt_event)
     var r = []
 
@@ -454,6 +614,7 @@ var popup_user_form = fn(data, mode){
 
 
     var uug_grid = basic_data_box(uug_info, basic_uug_data, false, false)
+    var grp_grid = basic_data_box(grp_info, basic_grp_data, false, false)
     var gct_grid = basic_data_box(gct_info, basic_gct_data, false, false)
     grid_add(uug_grid, patient_s,   0,1, 3,1, 1,0, 3,1)
     grid_add(uug_grid, patient_t,   0,2, 3,1, 1,1, 3,1)
@@ -462,11 +623,14 @@ var popup_user_form = fn(data, mode){
     
     var temp_grid = component("grid", "")
     bg_white(temp_grid)
-    grid_add(temp_grid, cdt_s,       0,1, 1,1, 9,0, 3,1)
-    grid_add(temp_grid, c_s_btn,     1,1, 1,1, 1,0, 3,1)
-    grid_add(gct_grid, temp_grid,     0,1, 3,1, 1,0, 3,1)
+    grid_add(grp_grid, grp_s,       0,1, 3,1, 1,0, 1,1)
+    grid_add(grp_grid, grp_t,       0,2, 3,1, 1,1, 3,1)
 
-    grid_add(gct_grid, cdt_t,       0,2, 3,1, 1,1, 3,1)
+    grid_add(temp_grid, cdt_s,      0,1, 1,1, 9,0, 3,1)
+    grid_add(temp_grid, c_s_btn,    1,1, 1,1, 1,0, 3,1)
+
+    grid_add(gct_grid, temp_grid,   0,1, 3,1, 2,0, 3,1)
+    grid_add(gct_grid, cdt_t,       0,2, 3,1, 2,1, 3,1)
     grid_add(gct_grid, c_desc,      0,3, 6,1, 1,1, 3,1)
 
     var patient_d = []
@@ -476,44 +640,128 @@ var popup_user_form = fn(data, mode){
     event(patient_s, fn(){
         table_set_color(patient_t, "black", "white", -1, 0)
         var n_c_o = [[]]
-        var s_r_text = ".*" + trim(get(patient_s, "contents")) +  ".*"
+        var s_r_text = trim(get(patient_s, "contents"))
         var t_c = patient_data[1]
         var patient_id = get(patient_cmb, "text")
         var h_selected = [-1]
-       
-        each(t_c, fn(e, i){
-            if(
-                matches(upper(string(e)), ".*" + upper(s_r_text) + ".*")
-            ){
-                set(n_c_o, 0, n_c_o[0] + e)
-                each(range(0, 2), fn(p_e, p_i) {
-                    if(patient_id != ""){
-                        var e_id = trim(split(e[0], "_")[2])
-                        if(matches(upper(e_id), ".*" + upper(patient_id) + ".*")){
-                            table_set_color(patient_t, "white", "blue", len(n_c_o[0])- 1, p_i)
-                        }else{
-                            if(e[1] == false | empty(e[1])){
-                                table_set_color(patient_t, "black", "yellow", len(n_c_o[0]) - 1, p_i)
+        if(s_r_text != ""){
+            each(t_c, fn(e, i){
+                if(
+                    matches(upper(string(e)), ".*" + upper(s_r_text) + ".*")
+                ){
+                    set(n_c_o, 0, n_c_o[0] + e)
+                    each(range(0, 2), fn(p_e, p_i) {
+                        if(patient_id != ""){
+                            var e_id = trim(split(e[0], "_")[2])
+                            if(matches(upper(e_id), ".*" + upper(patient_id) + ".*")){
+                                table_set_color(patient_t, "white", "blue", len(n_c_o[0])- 1, p_i)
                             }else{
-                                table_set_color(patient_t, "black", "white", len(n_c_o[0]) - 1, p_i)
+                                if(e[1] == false | empty(e[1])){
+                                    table_set_color(patient_t, "black", "yellow", len(n_c_o[0]) - 1, p_i)
+                                }else{
+                                    table_set_color(patient_t, "black", "white", len(n_c_o[0]) - 1, p_i)
+                                }
                             }
                         }
-                    }
-                })
+                    })
 
-            }
-        })
-
-        var n_c_o = n_c_o[0]
-        config(patient_t, "contents", n_c_o)
-    
+                }
+            })
+            var n_c_o = n_c_o[0]
+            config(patient_t, "contents", n_c_o)
+        }else{
+            config(patient_t, "contents", t_c)
+        }
     })
-    event(c_s_btn, fn(){
+
+    event(grp_s, fn(){
+        table_set_color(grp_t, "black", "white", -1, 0)
+        var n_c_o = [[]]
+        var search_text = trim(get(grp_s, "contents"))
+        var s_r_text = search_text
+        var t_c = grp_data[1]
+
+        var grp_id = get(grp_cmb, "text")
+        var h_selected = [-1]
+        if(search_text != ""){
+            each(t_c, fn(e, i){
+                if(
+                    matches(upper(string(e[0])),  ".*" + upper(s_r_text) + ".*") 
+                ){
+                    set(n_c_o, 0, n_c_o[0] + [e[0]])
+                    if(grp_id != ""){
+                        var e_id = trim(split(e[0], "-")[0])
+                        if(
+                            matches(upper(e_id), ".*" + upper(grp_id)  + ".*")
+                        ){
+                            set(h_selected, 0, len(n_c_o[0])-1)
+                        }
+                    }
+                }
+            })
+            var n_c_o = n_c_o[0]
+            config(grp_t, "contents", n_c_o)
+        }else{
+            config(grp_t, "contents", t_c)
+        }
+
+        if(h_selected[0] != -1){
+            table_set_color(grp_t, "white", "blue", h_selected[0], 0)
+        }
+    })
+
+    event(cdt_s, fn(){
         table_set_color(cdt_t, "black", "white", -1, 0)
         var n_c_o = [[]]
-        var s_r_text = ".*" + trim(get(cdt_s, "contents")) +  ".*"
-        var t_c = cdt_data[1]
+        var search_text = trim(get(cdt_s, "contents"))
+        var s_r_text = search_text
+        var temp_cdt_data = cdt_s_data[0]
+        var t_c = temp_cdt_data[1]
 
+        var cdt_id = get(cdt_cmb, "text")
+        var h_selected = [-1]
+        if(search_text != "" & t_c != null){
+            each(t_c, fn(e, i){
+                if(
+                    matches(upper(string(e[0])),  ".*" + upper(s_r_text) + ".*") |
+                    matches(upper(string(e[1])),  ".*" + upper(s_r_text) + ".*")
+                ){
+                    set(n_c_o, 0, n_c_o[0] + [e[0]])
+                    if(cdt_id != ""){
+                        var e_id = trim(split(e[0], "-")[0])
+                        if(
+                            matches(upper(e_id), ".*" + upper(cdt_id)  + ".*")
+                        ){
+                            set(h_selected, 0, len(n_c_o[0])-1)
+                        }
+                    }
+                }
+            })
+
+            var n_c_o = n_c_o[0]
+            config(cdt_t, "contents", n_c_o)
+        }else{
+            config(cdt_t, "contents", t_c)
+        }
+        if(h_selected[0] != -1){
+            table_set_color(cdt_t, "white", "blue", h_selected[0], 0)
+        }
+    })
+    event(c_s_btn, fn(){
+
+        var n_c_o = [[]]
+        var search_text = trim(get(cdt_s, "contents"))
+        var s_r_text = search_text 
+
+        set(cdt_s_data, 0, get_cdt_data_query_search(search_text))
+        var temp_cdt_data = cdt_s_data[0]
+        config(cdt_cmb, "contents", temp_cdt_data[0])
+        config(cdt_t, "contents", temp_cdt_data[1])
+        config_desc("", c_desc)
+        table_set_color(cdt_t, "black", "white", -1, 0)
+
+        var temp_cdt_data = cdt_s_data[0]
+        var t_c = temp_cdt_data[1]
         var cdt_id = get(cdt_cmb, "text")
         var h_selected = [-1]
         
@@ -566,10 +814,11 @@ var popup_user_form = fn(data, mode){
     grid_add(button_grid, cancel_button, 1,0, 1,1, 1,1, 1,1, 0,5,0,0)
 
     grid_add(main_grid, uug_grid,        0,1, 1,1, 1,1, 3,1, 30,30,0,30)
-    grid_add(main_grid, gct_grid,        0,2, 1,1, 1,4, 3,1, 30,30,0,30)
-    grid_add(main_grid, button_grid,     0,3, 1,1, 1,0, 1,1, 20,30,30,30)
+    grid_add(main_grid, grp_grid,        0,2, 1,1, 1,1, 3,1, 30,30,0,30)
+    grid_add(main_grid, gct_grid,        0,3, 1,1, 1,2, 3,1, 30,30,0,30)
+    grid_add(main_grid, button_grid,     0,4, 1,1, 1,0, 1,1, 20,30,30,30)
 
-    custom_dialog(main_grid, "Input data", 1000, 800, false, r)
+    custom_dialog(main_grid, "Input data", 1000, 900, false, r)
     return return_val[0]
 }
 
